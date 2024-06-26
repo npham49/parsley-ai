@@ -8,6 +8,34 @@
       "when": 1719171302231,
       "tag": "0000_thick_hercules",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1719381624408,
+      "tag": "0001_first_terrax",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1719382640324,
+      "tag": "0002_cynical_the_twelve",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1719382682324,
+      "tag": "0003_colorful_skrulls",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1719383511408,
+      "tag": "0004_large_wallow",
+      "breakpoints": true
     }
   ]
 }
