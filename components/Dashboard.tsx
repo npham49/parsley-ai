@@ -1,98 +1,120 @@
+"use client";
 /**
  * v0 by Vercel.
- * @see https://v0.dev/t/Oa0HAbRk2OG
+ * @see https://v0.dev/t/zMiJFtjy2hq
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
-"use client"
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import AddCourseModal from "./AddCourseModal";
+import { SelectCourse } from "@/db/schema";
+import { useQuery } from "@tanstack/react-query";
+import { getCourses } from "@/app/dashboard/actions";
 
-export default function Component() {
-  const hotelRooms = [
-    {
-      id: 1,
-      image: "/placeholder.svg",
-      type: "Standard Room",
-      description: "Cozy and comfortable room with a queen-sized bed.",
+export default function Dashboard({
+  initialData,
+}: {
+  initialData: SelectCourse[];
+}) {
+  const { data, isLoading, refetch, error } = useQuery({
+    queryKey: ["courses"],
+    queryFn: async () => {
+      const response = await getCourses();
+      if (response?.serverError) {
+        throw new Error(response.serverError);
+      }
+      if (!response?.data) {
+        throw new Error("Failed to fetch courses");
+      }
+      return response?.data;
     },
-    {
-      id: 2,
-      image: "/placeholder.svg",
-      type: "Deluxe Room",
-      description: "Spacious room with a king-sized bed and city view.",
-    },
-    {
-      id: 3,
-      image: "/placeholder.svg",
-      type: "Suite",
-      description: "Luxurious suite with a separate living area and balcony.",
-    },
-    {
-      id: 4,
-      image: "/placeholder.svg",
-      type: "Standard Room",
-      description: "Affordable room with a full-sized bed and basic amenities.",
-    },
-    {
-      id: 5,
-      image: "/placeholder.svg",
-      type: "Deluxe Room",
-      description: "Elegant room with a king-sized bed and en-suite bathroom.",
-    },
-    {
-      id: 6,
-      image: "/placeholder.svg",
-      type: "Suite",
-      description: "Spacious suite with a separate bedroom, living area, and kitchen.",
-    },
-  ]
+    initialData: initialData,
+    refetchOnMount: true
+  });
+
   return (
-    <div className="flex flex-col h-screen">
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto py-8 px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {hotelRooms.map((room) => (
-            <div key={room.id} className="bg-background rounded-lg shadow-lg overflow-hidden">
-              <img
-                src="/placeholder.svg"
-                alt={room.type}
-                width={400}
-                height={300}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h3 className="text-lg font-bold">{room.type}</h3>
-                <p className="text-muted-foreground">{room.description}</p>
-              </div>
+    <div className="flex flex-col min-h-[100dvh]">
+      <header className="bg-slate-800 px-4 lg:px-6 h-14 flex items-center">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <span className="flex text-primary-foreground items-center justify-center text-xl font-bold">
+                Dashboard
+              </span>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link
+                  href="/dashboard"
+                  className="text-sm text-primary-foreground font-medium hover:underline hover:text-slate-400 underline-offset-4"
+                  prefetch={false}
+                >
+                  Courses
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </header>
+      <main className="flex-1 bg-muted/40 py-8 sm:py-12 md:py-16 lg:py-20">
+        <div className="container px-4 md:px-6">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                All Courses
+              </h1>
+              <p className="max-w-[600px] text-muted-foreground md:text-xl mt-2">
+                Browse and manage the courses you&apos;re currently enrolled in.
+              </p>
             </div>
-          ))}
+            <AddCourseModal />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {isLoading && <p>Loading...</p>}
+            {error && <p>{error.message}</p>}
+            {data.map((course) => (
+              <div key={course.id}>
+                <Card>
+                  <CardHeader>
+                    <div className="text-wrap">
+                      <CardTitle>{course.title}</CardTitle>
+                    </div>
+                    <CardDescription>{course.summary}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {course.syllabuslink && (
+                      <div className="flex items-center justify-between">
+                        <Link href={course.syllabuslink} prefetch={false} target="_blank">
+                          View Syllabus
+                        </Link>
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full">View Documents</Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            ))}
+          </div>
         </div>
       </main>
     </div>
-  )
-}
-
-function HotelIcon(props:any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M10 22v-6.57" />
-      <path d="M12 11h.01" />
-      <path d="M12 7h.01" />
-      <path d="M14 15.43V22" />
-      <path d="M15 16a5 5 0 0 0-6 0" />
-      <path d="M16 11h.01" />
-      <path d="M16 7h.01" />
-      <path d="M8 11h.01" />
-      <path d="M8 7h.01" />
-      <rect x="4" y="2" width="16" height="20" rx="2" />
-    </svg>
-  )
+  );
 }
