@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS "course_table" (
 	"title" text NOT NULL,
 	"summary" text,
 	"syllabus_link" text,
-	"user_id" text NOT NULL,
+	"user_id" integer NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp NOT NULL
 );

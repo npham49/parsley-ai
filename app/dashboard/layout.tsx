@@ -4,7 +4,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex w-full min-h-screen flex-col">
+    <div className="flex w-full bg-muted/40 min-h-screen flex-col">
       {children}
     </div>
   );

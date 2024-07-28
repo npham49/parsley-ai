@@ -2,9 +2,9 @@ import * as schema from "../schema";
 import { db } from "..";
 import { eq } from "drizzle-orm";
 
-export const getCoursesByClerkId = async (clerkId: string) => {
+export const getCoursesByUserId = async (userId: number) => {
   const response = await db.query.courseTable.findMany({
-    where: eq(schema.courseTable.userId, clerkId),
+    where: eq(schema.courseTable.userId, userId),
   });
   return response;
 };
@@ -24,15 +24,17 @@ export const createCourse = async (course: schema.InsertCourse) => {
   return response;
 };
 
-
-export const updateCourseById = async (courseId: number, course: schema.InsertCourse) => {
+export const updateCourseById = async (
+  courseId: number,
+  course: schema.InsertCourse
+) => {
   const response = await db
     .update(schema.courseTable)
     .set(course)
     .where(eq(schema.courseTable.id, courseId))
     .returning();
   return response;
-}
+};
 
 export const deleteCourseById = async (courseId: number) => {
   const response = await db
@@ -40,4 +42,4 @@ export const deleteCourseById = async (courseId: number) => {
     .where(eq(schema.courseTable.id, courseId))
     .returning();
   return response;
-}
+};

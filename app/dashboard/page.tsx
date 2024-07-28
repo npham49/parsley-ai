@@ -1,8 +1,8 @@
-import Dashboard from "@/components/Dashboard";
+import Dashboard from "./dashboard";
 import { getCourses } from "./actions";
 
 export default async function Page() {
-  const initialData = await getCourses();
+  const initialData = await getCourses(null);
 
   if (initialData?.serverError || !initialData || !initialData.data) {
     return <div>Something went wrong... {initialData?.serverError}</div>;

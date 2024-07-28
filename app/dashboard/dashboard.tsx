@@ -21,7 +21,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import AddCourseModal from "./AddCourseModal";
+import AddCourseModal from "./add-course-modal";
 import { SelectCourse } from "@/db/schema";
 import { useQuery } from "@tanstack/react-query";
 import { getCourses } from "@/app/dashboard/actions";
@@ -34,7 +34,7 @@ export default function Dashboard({
   const { data, isLoading, refetch, error } = useQuery({
     queryKey: ["courses"],
     queryFn: async () => {
-      const response = await getCourses();
+      const response = await getCourses(null);
       if (response?.serverError) {
         throw new Error(response.serverError);
       }
@@ -44,7 +44,7 @@ export default function Dashboard({
       return response?.data;
     },
     initialData: initialData,
-    refetchOnMount: true
+    refetchOnMount: true,
   });
 
   return (
@@ -72,7 +72,7 @@ export default function Dashboard({
           </BreadcrumbList>
         </Breadcrumb>
       </header>
-      <main className="flex-1 bg-muted/40 py-8 sm:py-12 md:py-16 lg:py-20">
+      <main className="flex-1py-8 sm:py-12 md:py-16 lg:py-20">
         <div className="container px-4 md:px-6">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -88,7 +88,7 @@ export default function Dashboard({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {isLoading && <p>Loading...</p>}
             {error && <p>{error.message}</p>}
-            {data.map((course) => (
+            {data.map((course: SelectCourse) => (
               <div key={course.id}>
                 <Card>
                   <CardHeader>
@@ -100,7 +100,11 @@ export default function Dashboard({
                   <CardContent>
                     {course.syllabuslink && (
                       <div className="flex items-center justify-between">
-                        <Link href={course.syllabuslink} prefetch={false} target="_blank">
+                        <Link
+                          href={course.syllabuslink}
+                          prefetch={false}
+                          target="_blank"
+                        >
                           View Syllabus
                         </Link>
                       </div>

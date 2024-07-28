@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "./ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNewCourse } from "@/app/dashboard/actions";
@@ -26,11 +26,16 @@ export default function AddCourseModal() {
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: createNewCourse,
+    mutationFn: (formData) => createNewCourse(formData),
     onError: (error) => {
       return alert(error.message || "Failed to updated");
     },
-    onSuccess: () => {
+    onSuccess: (e) => {
+      console.log(e);
+      if (e?.serverError) {
+        alert(e.serverError);
+        return;
+      }
       // revalidate data or show success toast
       setFormData({
         title: "",
@@ -99,16 +104,12 @@ export default function AddCourseModal() {
         <DialogFooter>
           <Button
             onClick={() => {
-              mutate(formData);
+              mutate();
             }}
           >
             Add Course
           </Button>
-          <Button
-
-            variant="outline"
-            onClick={() => setOpen(false)}
-          >
+          <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
         </DialogFooter>

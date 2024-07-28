@@ -36,6 +36,20 @@
       "when": 1719383511408,
       "tag": "0004_large_wallow",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1722150358013,
+      "tag": "0005_confused_network",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1722150434712,
+      "tag": "0006_nebulous_thunderbolt",
+      "breakpoints": true
     }
   ]
 }
