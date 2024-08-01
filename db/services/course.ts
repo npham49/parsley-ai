@@ -16,6 +16,17 @@ export const getCourseById = async (courseId: number) => {
   return response;
 };
 
+export const getCourseByIdAndUserId = async (
+  courseId: number,
+  userId: number
+) => {
+  const response = await db.query.courseTable.findFirst({
+    where: (course, { eq }) =>
+      eq(course.id, courseId) && eq(course.userId, userId),
+  });
+  return response;
+};
+
 export const createCourse = async (course: schema.InsertCourse) => {
   const response = await db
     .insert(schema.courseTable)

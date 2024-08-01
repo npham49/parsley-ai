@@ -1,15 +1,9 @@
 "use server";
 
-import { z } from "zod";
-
 import { createCourse, getCoursesByUserId } from "@/db/services/course";
 import { userActionClient } from "@/lib/safe-action";
-
-const courseSchema = z.object({
-  title: z.string().min(3).max(10),
-  summary: z.string().min(8).max(100).optional(),
-  syllabuslink: z.string().url().optional(),
-});
+import { courseSchema } from "@/lib/zod-schemas/courses";
+import { revalidatePath } from "next/cache";
 
 export const getCourses = userActionClient.action(async ({ ctx }) => {
   const courses = await getCoursesByUserId(ctx.user.id);
@@ -31,5 +25,6 @@ export const createNewCourse = userActionClient
       throw new Error("Failed to create course");
     }
 
+    revalidatePath("/dashboard");
     return course;
   });
