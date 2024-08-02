@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "@/utils/Providers";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,9 +20,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-background antialiased">
-        <main className={inter.className}>
+      <body className={inter.className}>
+        <main className="min-h-screen bg-background antialiased">
           <Providers>{children}</Providers>
+          <Toaster />
           <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
             <p className="text-xs text-muted-foreground">
               &copy; 2024 AI App. All rights reserved.

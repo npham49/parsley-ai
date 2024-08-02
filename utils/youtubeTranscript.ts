@@ -12,6 +12,12 @@ export class YoutubeTranscriptError extends Error {
     super(`[YoutubeTranscript] 🚨 ${String(message)}`);
   }
 }
+type TranscriptSegment = {
+  text: string;
+  duration: number;
+  offset: number;
+  lang: string;
+};
 
 export class YoutubeTranscriptTooManyRequestError extends YoutubeTranscriptError {
   constructor() {
@@ -148,14 +154,41 @@ export class YoutubeTranscript {
     if (!transcriptResponse.ok) {
       throw new YoutubeTranscriptNotAvailableError(videoId);
     }
+
+    function transformArray(arr: TranscriptSegment[]) {
+      const newArray = [];
+
+      for (let i = 0; i < arr.length; i += 5) {
+        const chunk = arr.slice(i, i + 5);
+
+        if (chunk.length === 0) break;
+
+        const newText = chunk.map((item) => item.text).join(" ");
+        const newDuration = chunk.reduce((acc, item) => acc + item.duration, 0);
+        const newOffset = chunk[0].offset;
+
+        newArray.push({
+          text: newText,
+          duration: newDuration,
+          offset: newOffset,
+          lang: chunk[0].lang,
+        });
+      }
+
+      return newArray;
+    }
+
     const transcriptBody = await transcriptResponse.text();
     const results = [...transcriptBody.matchAll(RE_XML_TRANSCRIPT)];
-    return results.map((result) => ({
-      text: result[3],
-      duration: parseFloat(result[2]),
-      offset: parseFloat(result[1]),
-      lang: config?.lang ?? captions.captionTracks[0].languageCode,
-    }));
+    const transcript = transformArray(
+      results.map((result) => ({
+        text: result[3],
+        duration: parseFloat(result[2]),
+        offset: parseFloat(result[1]),
+        lang: config?.lang ?? captions.captionTracks[0].languageCode,
+      }))
+    );
+    return transcript;
   }
 
   /**

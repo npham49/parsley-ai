@@ -1,6 +1,7 @@
 import { SelectCourse } from "@/db/schema";
 import { SquarePlus } from "lucide-react";
 import Link from "next/link";
+import AddContentDialog from "./add-content-dialog";
 
 export default function CourseInformation({
   course,
@@ -25,10 +26,12 @@ export default function CourseInformation({
           <h3 className=" text-xl font-bold tracking-tighter sm:text-4xl md:text-xl">
             Contents
           </h3>
-          <div className="w-full h-auto p-4 border-2 border-secondary bg-background rounded-md shadow-sm flex flex-row hover:bg-muted-foreground/20 cursor-pointer">
-            <SquarePlus />
-            <p className="mx-2">Add New Content</p>
-          </div>
+          <AddContentDialog courseId={course.id}>
+            <div className="w-full h-auto p-4 border-2 border-secondary bg-background rounded-md shadow-sm flex flex-row hover:bg-muted-foreground/20 cursor-pointer">
+              <SquarePlus />
+              <p className="mx-2">Add New Content</p>
+            </div>
+          </AddContentDialog>
         </div>
         <div className="border border-secondary bg-card w-4/6 p-2 md:p-4 rounded-md shadow-sm">
           <h3 className=" text-xl font-bold tracking-tighter sm:text-4xl md:text-xl">
