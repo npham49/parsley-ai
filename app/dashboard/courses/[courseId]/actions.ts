@@ -1,7 +1,8 @@
 "use server";
 
-import { getCourseByIdAndUserId } from "@/db/services/course";
+import { getCourseByIdAndUserId, updateCourseById } from "@/db/services/course";
 import { userActionClient } from "@/lib/safe-action";
+import { UpdateCourseSchema } from "@/lib/zod-schemas/courses";
 import { DocumentSchema } from "@/lib/zod-schemas/document";
 import { matchYoutubeUrl } from "@/utils/helperFunctions";
 import { YoutubeTranscript } from "@/utils/youtubeTranscript";
@@ -18,6 +19,10 @@ export const getCourseAction = userActionClient
       parsedInput.courseId,
       ctx.user.id
     );
+
+    if (!course) {
+      throw new Error("Course not found");
+    }
     return course;
   });
 

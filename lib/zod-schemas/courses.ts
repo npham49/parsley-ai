@@ -5,3 +5,12 @@ export const courseSchema = z.object({
   summary: z.string().optional(),
   syllabuslink: z.union([z.literal(""), z.string().trim().url()]),
 });
+
+export const UpdateCourseSchema = z.object({
+  id: z.number(),
+  data: z.object({
+    title: z.string().optional(),
+    summary: z.string().optional(),
+    syllabuslink: z.string().optional(),
+  }),
+});
