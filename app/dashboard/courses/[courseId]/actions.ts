@@ -2,11 +2,17 @@
 
 import { getCourseByIdAndUserId, updateCourseById } from "@/db/services/course";
 import { userActionClient } from "@/lib/safe-action";
-import { UpdateCourseSchema } from "@/lib/zod-schemas/courses";
+import { OpenAIEmbeddings } from "@langchain/openai";
 import { DocumentSchema } from "@/lib/zod-schemas/document";
 import { matchYoutubeUrl } from "@/utils/helperFunctions";
-import { YoutubeTranscript } from "@/utils/youtubeTranscript";
+import {
+  TranscriptResponse,
+  YoutubeTranscript,
+} from "@/utils/youtubeTranscript";
 import { z } from "zod";
+import { createDocument } from "@/db/services/document";
+import { InsertContent } from "@/db/schema";
+import { addContentsForDocument } from "@/db/services/content";
 
 export const getCourseAction = userActionClient
   .schema(
@@ -37,6 +43,58 @@ export const addNewDocumentAction = userActionClient
       parsedInput.youtubeUrl?.split("watch?v=")[1].split("&")[0]
     );
 
-    console.log(transcript);
-    return transcript;
+    if (!transcript) {
+      throw new Error("Failed to fetch transcript");
+    }
+
+    const videoInformation = await fetch(
+      `https://www.youtube.com/oembed?url=${parsedInput.youtubeUrl}&format=json`
+    ).then((res) => res.json());
+
+    if (!videoInformation) {
+      throw new Error("Failed to fetch video information");
+    }
+
+    const createdDocument = await createDocument({
+      courseId: Number(parsedInput.courseId),
+      fileKey: String(parsedInput.youtubeUrl),
+      userId: Number(ctx.user.id),
+      title: videoInformation.title,
+    });
+
+    if (!createdDocument) {
+      throw new Error("Failed to create document");
+    }
+
+    const embeddings = new OpenAIEmbeddings({
+      model: "text-embedding-3-small",
+    });
+
+    const transcriptEmbeddings: InsertContent[] = await Promise.all(
+      transcript.map(async (t: TranscriptResponse) => {
+        const textEmbeddings = await embeddings.embedQuery(t.text);
+        return {
+          embedding: textEmbeddings,
+          metadata: {
+            offset: t.offset,
+            lang: t.lang || "N/A",
+            duration: t.duration || 0,
+          },
+          content: t.text,
+          documentId: createdDocument[0].id,
+          userId: Number(ctx.user.id),
+        };
+      })
+    );
+
+    const addedContents = await addContentsForDocument({
+      documentId: createdDocument[0].id,
+      contents: transcriptEmbeddings,
+    });
+
+    if (!addedContents) {
+      throw new Error("Failed to add contents");
+    }
+
+    return createdDocument;
   });

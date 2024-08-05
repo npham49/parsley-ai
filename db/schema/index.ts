@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
   index,
   integer,
+  json,
   pgTable,
   serial,
   text,
@@ -17,7 +18,8 @@ export const userTable = pgTable("user_table", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()
-    .$onUpdate(() => new Date()),
+    .$onUpdate(() => new Date())
+    .defaultNow(),
 });
 
 export type InsertUser = typeof userTable.$inferInsert;
@@ -34,7 +36,8 @@ export const courseTable = pgTable("course_table", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()
-    .$onUpdate(() => new Date()),
+    .$onUpdate(() => new Date())
+    .defaultNow(),
 });
 
 export type InsertCourse = typeof courseTable.$inferInsert;
@@ -61,7 +64,8 @@ export const documentTable = pgTable("document_table", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()
-    .$onUpdate(() => new Date()),
+    .$onUpdate(() => new Date())
+    .defaultNow(),
 });
 
 export type InsertDocument = typeof documentTable.$inferInsert;
@@ -86,15 +90,16 @@ export const contentTable = pgTable(
     documentId: integer("document_id")
       .references(() => documentTable.id, { onDelete: "cascade" })
       .notNull(),
-    title: text("title").notNull(),
     content: text("content").notNull(),
+    metadata: json("metadata").notNull(),
     userId: integer("user_id")
       .notNull()
       .references(() => userTable.id),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => new Date())
+      .defaultNow(),
     embedding: vector("embedding", { dimensions: 1536 }),
   },
   (table) => ({
