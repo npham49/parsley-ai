@@ -11,8 +11,8 @@ export default function CourseInformation({
   course: SelectCourse;
 }) {
   return (
-    <div className=" min-h-screen">
-      <div className="flex justify-between">
+    <div className="h-[700px] overflow-scroll">
+      {/* <div className="flex justify-between">
         <div className="flex flex-col">
           <h2 className=" text-4xl font-bold tracking-tighter sm:text-4xl md:text-3xl">
             Course: {course.title}
@@ -32,8 +32,8 @@ export default function CourseInformation({
         <Link href={`/dashboard/courses/${course.id}/edit`}>
           <Button>Edit Course</Button>
         </Link>
-      </div>
-      <div className="flex flex-row w-full h-fit">
+      </div> */}
+      <div className="flex md:flex-row flex-col w-full h-full">
         <div className="border border-secondary bg-card w-2/6 p-2 md:p-4 rounded-md shadow-sm mr-1">
           <h3 className=" text-xl font-bold tracking-tighter sm:text-4xl md:text-xl">
             Contents
@@ -49,27 +49,6 @@ export default function CourseInformation({
           <ChatBox />
         </div>
       </div>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t z-0">
-        <p className="text-xs text-muted-foreground">
-          &copy; 2024 AI App. All rights reserved.
-        </p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link
-            href="#"
-            className="text-xs hover:underline underline-offset-4"
-            prefetch={false}
-          >
-            Terms of Service
-          </Link>
-          <Link
-            href="#"
-            className="text-xs hover:underline underline-offset-4"
-            prefetch={false}
-          >
-            Privacy
-          </Link>
-        </nav>
-      </footer>
     </div>
   );
 }

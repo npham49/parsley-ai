@@ -1,7 +1,6 @@
 import * as schema from "../schema";
 import { db } from "..";
 import { cosineDistance, desc, gt, sql } from "drizzle-orm";
-import { eq } from "drizzle-orm";
 
 export async function addContentsForDocument({
   documentId,

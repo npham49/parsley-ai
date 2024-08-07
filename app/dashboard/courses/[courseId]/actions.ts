@@ -12,7 +12,13 @@ import {
 import { z } from "zod";
 import { createDocument } from "@/db/services/document";
 import { InsertContent } from "@/db/schema";
-import { addContentsForDocument } from "@/db/services/content";
+import {
+  addContentsForDocument,
+  findSimilarContent,
+} from "@/db/services/content";
+import { createStreamableValue } from "ai/rsc";
+import { CoreMessage, streamText } from "ai";
+import { openai } from "@ai-sdk/openai";
 
 export const getCourseAction = userActionClient
   .schema(
@@ -98,3 +104,47 @@ export const addNewDocumentAction = userActionClient
 
     return createdDocument;
   });
+
+export async function continueConversation(messages: CoreMessage[]) {
+  const newMessage = messages[messages.length - 1].content;
+
+  const embeddings = new OpenAIEmbeddings({
+    model: "text-embedding-3-small",
+  });
+
+  const textEmbeddings = await embeddings.embedQuery(newMessage as string);
+
+  const similarContents = await findSimilarContent(textEmbeddings);
+
+  const newMessageWithContext = `
+  PLEASE ANSWER THE FOLLOWING QUESTION FROM THE USER:
+  ${newMessage}
+  THIS IS THE CONTEXT PROVIDED BY THE SYSTEM:
+  ${similarContents.map((content) => content.content).join("\n")}
+  `;
+
+  const result = await streamText({
+    model: openai("gpt-4o-mini"),
+    messages: [
+      {
+        role: "system",
+        content: `PROVIDE YOUR ANSWERS IN MARKDOWN!
+      You are a teaching assistant for a course on AI. Questions comes from your student, you must answer
+      with the context provided after the line "THIS IS THE CONTEXT PROVIDED BY THE SYSTEM:", if you cannot answer
+      the questions, please let the student know. You can suggest upload extra content if needed, but do specify what
+      you are looking for.`,
+      },
+      ...messages.splice(0, messages.length - 1),
+      {
+        role: "user",
+        content: newMessageWithContext,
+      },
+    ],
+    onFinish: () => {
+      console.log("Finished streaming", messages);
+    },
+  });
+
+  const stream = createStreamableValue(result.textStream);
+  return stream.value;
+}
