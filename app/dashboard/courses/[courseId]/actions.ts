@@ -22,6 +22,8 @@ import {
 import { createStreamableValue } from "ai/rsc";
 import { CoreMessage, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { WebPDFLoader } from "@langchain/community/document_loaders/web/pdf";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { utapi } from "@/lib/uploadthing";
 
 export const getCourseDocumentsAction = userActionClient
@@ -90,69 +92,123 @@ export const deleteUploadedFileAction = userActionClient
 export const addNewDocumentAction = userActionClient
   .schema(DocumentSchema)
   .action(async ({ ctx, parsedInput }) => {
-    if (!matchYoutubeUrl(parsedInput.youtubeUrl)) {
-      throw new Error("Invalid Youtube URL");
+    if (parsedInput.youtubeUrl !== "") {
+      return loadYoutube(ctx, parsedInput);
+    } else if (parsedInput.fileKey) {
+      return loadDocument(ctx, parsedInput);
     }
-
-    const transcript = await YoutubeTranscript.fetchTranscript(
-      parsedInput.youtubeUrl?.split("watch?v=")[1].split("&")[0]
-    );
-
-    if (!transcript) {
-      throw new Error("Failed to fetch transcript");
-    }
-
-    const videoInformation = await fetch(
-      `https://www.youtube.com/oembed?url=${parsedInput.youtubeUrl}&format=json`
-    ).then((res) => res.json());
-
-    if (!videoInformation) {
-      throw new Error("Failed to fetch video information");
-    }
-
-    const createdDocument = await createDocument({
-      courseId: Number(parsedInput.courseId),
-      fileKey: String(parsedInput.youtubeUrl),
-      userId: Number(ctx.user.id),
-      title: videoInformation.title,
-    });
-
-    if (!createdDocument) {
-      throw new Error("Failed to create document");
-    }
-
-    const embeddings = new OpenAIEmbeddings({
-      model: "text-embedding-3-small",
-    });
-
-    const transcriptEmbeddings: InsertContent[] = await Promise.all(
-      transcript.map(async (t: TranscriptResponse) => {
-        const textEmbeddings = await embeddings.embedQuery(t.text);
-        return {
-          embedding: textEmbeddings,
-          metadata: {
-            offset: t.offset,
-            lang: t.lang || "N/A",
-            duration: t.duration || 0,
-          },
-          content: t.text,
-          documentId: createdDocument[0].id,
-          userId: Number(ctx.user.id),
-        };
-      })
-    );
-
-    const addedContents = await addContentsForDocument({
-      documentId: createdDocument[0].id,
-      contents: transcriptEmbeddings,
-    });
-
-    if (!addedContents) {
-      throw new Error("Failed to add contents");
-    }
-
-    return createdDocument;
   });
+
+const loadYoutube = async (
+  ctx: {
+    user: {
+      id: number;
+      email: string;
+      name: string | null;
+      clerkId: string;
+      createdAt: Date;
+      updatedAt: Date;
+    };
+  },
+  parsedInput: { youtubeUrl: string; courseId: number }
+) => {
+  if (!matchYoutubeUrl(parsedInput.youtubeUrl)) {
+    throw new Error("Invalid Youtube URL");
+  }
+
+  const transcript = await YoutubeTranscript.fetchTranscript(
+    parsedInput.youtubeUrl?.split("watch?v=")[1].split("&")[0]
+  );
+
+  if (!transcript) {
+    throw new Error("Failed to fetch transcript");
+  }
+
+  const videoInformation = await fetch(
+    `https://www.youtube.com/oembed?url=${parsedInput.youtubeUrl}&format=json`
+  ).then((res) => res.json());
+
+  if (!videoInformation) {
+    throw new Error("Failed to fetch video information");
+  }
+
+  const createdDocument = await createDocument({
+    courseId: Number(parsedInput.courseId),
+    fileKey: String(parsedInput.youtubeUrl),
+    userId: Number(ctx.user.id),
+    title: videoInformation.title,
+  });
+
+  if (!createdDocument) {
+    throw new Error("Failed to create document");
+  }
+
+  const embeddings = new OpenAIEmbeddings({
+    model: "text-embedding-3-small",
+  });
+
+  const transcriptEmbeddings: InsertContent[] = await Promise.all(
+    transcript.map(async (t: TranscriptResponse) => {
+      const textEmbeddings = await embeddings.embedQuery(t.text);
+      return {
+        embedding: textEmbeddings,
+        metadata: {
+          offset: t.offset,
+          lang: t.lang || "N/A",
+          duration: t.duration || 0,
+        },
+        content: t.text,
+        documentId: createdDocument[0].id,
+        userId: Number(ctx.user.id),
+      };
+    })
+  );
+
+  const addedContents = await addContentsForDocument({
+    documentId: createdDocument[0].id,
+    contents: transcriptEmbeddings,
+  });
+
+  if (!addedContents) {
+    throw new Error("Failed to add contents");
+  }
+
+  return createdDocument;
+};
+
+const loadDocument = async (
+  ctx: {
+    user: {
+      id: number;
+      email: string;
+      name: string | null;
+      clerkId: string;
+      createdAt: Date;
+      updatedAt: Date;
+    };
+  },
+  parsedInput: { fileKey: string; courseId: number }
+) => {
+  if (!parsedInput.fileKey) {
+    throw new Error("Invalid file key");
+  }
+  const fileUrl = await utapi.getSignedURL(parsedInput.fileKey);
+
+  const fileBlob = await fetch(fileUrl.url).then((res) => res.blob());
+
+  const loader = new WebPDFLoader(fileBlob);
+
+  const docs = await loader.load();
+
+  const textSplitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 1000,
+    chunkOverlap: 200,
+  });
+
+  const splits = await textSplitter.splitDocuments(docs);
+
+  console.log(splits);
+};
 
 export async function continueConversation(messages: CoreMessage[]) {
   const newMessage = messages[messages.length - 1].content;

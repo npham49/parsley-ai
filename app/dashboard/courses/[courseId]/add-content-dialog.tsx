@@ -236,6 +236,9 @@ export default function AddContentDialog({
                       />
                     </div>
                   )}
+                  {form.watch("fileKey") !== "" && (
+                    <Button type="submit">Process File</Button>
+                  )}
                 </form>
               </Form>
             )}
