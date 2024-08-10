@@ -1,15 +1,19 @@
 import { SelectCourse } from "@/db/schema";
 import { SquarePlus } from "lucide-react";
-import Link from "next/link";
 import AddContentDialog from "./add-content-dialog";
-import { Button } from "@/components/ui/button";
 import ChatBox from "./chat-box";
+import CourseContentPanel from "./course-contents-panel";
+import { getCourseDocumentsAction } from "./actions";
 
-export default function CourseInformation({
+export default async function CourseInformation({
   course,
 }: {
   course: SelectCourse;
 }) {
+  const documents = await getCourseDocumentsAction({
+    courseId: course.id,
+  });
+
   return (
     <div className="h-[700px] overflow-scroll">
       {/* <div className="flex justify-between">
@@ -38,6 +42,11 @@ export default function CourseInformation({
           <h3 className=" text-xl font-bold tracking-tighter sm:text-4xl md:text-xl">
             Contents
           </h3>
+          {documents !== undefined && documents.serverError ? (
+            <div className="text-red-500">{documents.serverError}</div>
+          ) : (
+            <CourseContentPanel document={documents?.data || []} />
+          )}
           <AddContentDialog courseId={course.id}>
             <div className="w-full h-auto p-4 border-2 border-secondary bg-background rounded-md shadow-sm flex flex-row hover:bg-muted-foreground/20 cursor-pointer">
               <SquarePlus />

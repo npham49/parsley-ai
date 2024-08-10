@@ -10,7 +10,10 @@ import {
   YoutubeTranscript,
 } from "@/utils/youtubeTranscript";
 import { z } from "zod";
-import { createDocument } from "@/db/services/document";
+import {
+  createDocument,
+  getDocumentsByCourseIdAndUserId,
+} from "@/db/services/document";
 import { InsertContent } from "@/db/schema";
 import {
   addContentsForDocument,
@@ -19,6 +22,29 @@ import {
 import { createStreamableValue } from "ai/rsc";
 import { CoreMessage, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { utapi } from "@/lib/uploadthing";
+
+export const getCourseDocumentsAction = userActionClient
+  .schema(
+    z.object({
+      courseId: z.number(),
+    })
+  )
+  .action(async ({ ctx, parsedInput }) => {
+    if (!parsedInput.courseId) {
+      throw new Error("Invalid course id");
+    }
+
+    const documents = await getDocumentsByCourseIdAndUserId(
+      parsedInput.courseId,
+      ctx.user.id
+    );
+
+    if (!documents) {
+      throw new Error("Documents not found");
+    }
+    return documents;
+  });
 
 export const getCourseAction = userActionClient
   .schema(
@@ -36,6 +62,29 @@ export const getCourseAction = userActionClient
       throw new Error("Course not found");
     }
     return course;
+  });
+
+export const deleteUploadedFileAction = userActionClient
+  .schema(
+    z.object({
+      fileKey: z.string(),
+    })
+  )
+  .action(async ({ ctx, parsedInput }) => {
+    const file = await utapi.listFiles();
+    const fileToDelete = file.files.find((f) => f.key === parsedInput.fileKey);
+
+    if (!fileToDelete) {
+      throw new Error("File not found");
+    }
+
+    if (fileToDelete.customId?.split("-")[0] !== String(ctx.user.id)) {
+      throw new Error("Unauthorized");
+    }
+
+    const deleted = await utapi.deleteFiles([parsedInput.fileKey]);
+
+    return deleted.deletedCount;
   });
 
 export const addNewDocumentAction = userActionClient

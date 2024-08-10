@@ -6,4 +6,5 @@ export const DocumentSchema = z.object({
     required_error: "You need to select a content type.",
   }),
   youtubeUrl: z.string().optional(),
+  fileKey: z.string().optional(),
 });

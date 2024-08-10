@@ -22,6 +22,19 @@ export async function getDocumentByIdAndUserId(
   return response;
 }
 
+export async function getDocumentsByCourseIdAndUserId(
+  courseId: number,
+  userId: number
+) {
+  const response = await db.query.documentTable.findMany({
+    where: and(
+      eq(schema.documentTable.courseId, courseId),
+      eq(schema.documentTable.userId, userId)
+    ),
+  });
+  return response;
+}
+
 export async function createDocument(document: schema.InsertDocument) {
   const response = await db
     .insert(schema.documentTable)

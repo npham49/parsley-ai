@@ -26,9 +26,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { addNewDocumentAction } from "./actions";
-import { Loader } from "lucide-react";
+import { addNewDocumentAction, deleteUploadedFileAction } from "./actions";
+import { Loader, X } from "lucide-react";
+import Link from "next/link";
 import { matchYoutubeUrl } from "@/utils/helperFunctions";
+import React from "react";
+import { UploadButton, UploadDropzone } from "@/utils/uploadthing";
 
 export default function AddContentDialog({
   courseId,
@@ -37,6 +40,26 @@ export default function AddContentDialog({
   courseId: number;
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = React.useState(false);
+  const [tempUrl, setTempUrl] = React.useState("");
+  const [fileName, setFileName] = React.useState("");
+
+  const deleteUploadedFileMutation = useMutation({
+    mutationFn: (fileKey: string) => deleteUploadedFileAction({ fileKey }),
+    onError: (error) => {
+      return alert(error.message || "Failed to delete file");
+    },
+    onSuccess: () => {
+      toast({
+        title: "File deleted",
+        variant: "default",
+      });
+      setTempUrl("");
+      setFileName("");
+      form.setValue("fileKey", "");
+    },
+  });
+
   const mutation = useMutation({
     mutationFn: (formData: z.infer<typeof DocumentSchema>) =>
       addNewDocumentAction(formData),
@@ -61,6 +84,7 @@ export default function AddContentDialog({
         variant: "default",
       });
       console.log(e?.data);
+      setOpen(false);
     },
   });
 
@@ -70,6 +94,7 @@ export default function AddContentDialog({
       courseId,
       type: undefined,
       youtubeUrl: "",
+      fileKey: "",
     },
   });
 
@@ -78,7 +103,7 @@ export default function AddContentDialog({
   }
   return (
     <div>
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>{children}</DialogTrigger>
         <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
@@ -88,7 +113,7 @@ export default function AddContentDialog({
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 pb-4">
-            {mutation.isPending ? (
+            {mutation.isPending || deleteUploadedFileMutation.isPending ? (
               <Loader />
             ) : (
               <Form {...form}>
@@ -174,6 +199,42 @@ export default function AddContentDialog({
                     )}
                   {form.watch("youtubeUrl") && (
                     <Button type="submit">Process Video</Button>
+                  )}
+                  {form.watch("type") === "file" &&
+                    form.watch("fileKey") === "" && (
+                      <UploadDropzone
+                        endpoint="pdfUploader"
+                        onClientUploadComplete={(res) => {
+                          // Do something with the response
+                          console.log("Files: ", res);
+                          form.setValue("fileKey", res[0].key);
+                          setTempUrl(res[0].serverData.tempUrl.url);
+                          setFileName(res[0].name);
+                        }}
+                        onUploadError={(error: Error) => {
+                          // Do something with the error.
+                          alert(`ERROR! ${error.message}`);
+                        }}
+                      />
+                    )}
+                  {form.watch("fileKey") !== "" && tempUrl && (
+                    <div className="flex flex-row content-between">
+                      <Link
+                        href={tempUrl}
+                        className="flex items-center space-x-2"
+                        target="_blank"
+                      >
+                        {fileName}
+                      </Link>{" "}
+                      <X
+                        className="cursor-pointer"
+                        onClick={() => {
+                          deleteUploadedFileMutation.mutate(
+                            form.getValues("fileKey") as string
+                          );
+                        }}
+                      />
+                    </div>
                   )}
                 </form>
               </Form>
