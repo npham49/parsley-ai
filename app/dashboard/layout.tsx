@@ -1,6 +1,6 @@
 import BreadcrumbGenerator from "@/components/BreadcrumbsGenerator";
-import { SidebarAndBreadCrumbs } from "./navigations";
 import { cn } from "@/lib/utils";
+import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 
 export default function RootLayout({
@@ -16,10 +16,10 @@ export default function RootLayout({
           "h-screen" // for your use case, use `h-screen` instead of `h-[60vh]`
         )}
       >
-        <SidebarAndBreadCrumbs />
-        <div className="p-2 md:pt-5 md:px-5 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 w-full h-full">
-          <header>
+        <div className="p-2 md:pt-5 md:px-5 bg-white dark:bg-neutral-900 flex flex-col gap-2 w-full h-full">
+          <header className="w-full flex justify-between">
             <BreadcrumbGenerator />
+            <UserButton />
           </header>
           {children}
           <footer className="flex flex-col gap-2 h-6 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t z-0">

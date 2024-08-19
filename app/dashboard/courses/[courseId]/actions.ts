@@ -25,6 +25,7 @@ import { openai } from "@ai-sdk/openai";
 import { WebPDFLoader } from "@langchain/community/document_loaders/web/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { utapi } from "@/lib/uploadthing";
+import { revalidatePath } from "next/cache";
 
 export const getCourseDocumentsAction = userActionClient
   .schema(
@@ -173,6 +174,8 @@ const loadYoutube = async (
     throw new Error("Failed to add contents");
   }
 
+  revalidatePath("/dashboard/courses/" + parsedInput.courseId);
+
   return createdDocument;
 };
 
@@ -187,10 +190,10 @@ const loadDocument = async (
       updatedAt: Date;
     };
   },
-  parsedInput: { fileKey: string; courseId: number }
+  parsedInput: { fileKey: string; courseId: number; pdfName: string }
 ) => {
-  if (!parsedInput.fileKey) {
-    throw new Error("Invalid file key");
+  if (!parsedInput.fileKey || !parsedInput.pdfName) {
+    throw new Error("Missing values.");
   }
   const fileUrl = await utapi.getSignedURL(parsedInput.fileKey);
 
@@ -207,7 +210,49 @@ const loadDocument = async (
 
   const splits = await textSplitter.splitDocuments(docs);
 
-  console.log(splits);
+  const createdDocument = await createDocument({
+    courseId: Number(parsedInput.courseId),
+    fileKey: String(parsedInput.fileKey),
+    userId: Number(ctx.user.id),
+    title: parsedInput.pdfName,
+  });
+
+  if (!createdDocument) {
+    throw new Error("Failed to create document");
+  }
+
+  const embeddings = new OpenAIEmbeddings({
+    model: "text-embedding-3-small",
+  });
+
+  const pdfEmbeddings: InsertContent[] = await Promise.all(
+    splits.map(async (split) => {
+      const textEmbeddings = await embeddings.embedQuery(split.pageContent);
+      return {
+        embedding: textEmbeddings,
+        metadata: {
+          pageNumber: split.metadata.loc.pageNumber,
+        },
+        content: split.pageContent,
+        documentId: createdDocument[0].id,
+        userId: Number(ctx.user.id),
+      };
+    })
+  );
+
+  console.log(pdfEmbeddings);
+  const addedContents = await addContentsForDocument({
+    documentId: createdDocument[0].id,
+    contents: pdfEmbeddings,
+  });
+
+  if (!addedContents) {
+    throw new Error("Failed to add contents");
+  }
+
+  revalidatePath("/dashboard/courses/" + parsedInput.courseId);
+
+  return createdDocument;
 };
 
 export async function continueConversation(messages: CoreMessage[]) {

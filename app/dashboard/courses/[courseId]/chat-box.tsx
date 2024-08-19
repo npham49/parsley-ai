@@ -14,6 +14,8 @@ import { type CoreMessage } from "ai";
 import { useState } from "react";
 import { continueConversation } from "./actions";
 import { readStreamableValue } from "ai/rsc";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent } from "@/components/ui/card";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -22,77 +24,78 @@ export default function ChatBox() {
   const [messages, setMessages] = useState<CoreMessage[]>([]);
   const [input, setInput] = useState("");
   return (
-    <div className="flex flex-col h-full bg-background">
-      <header className="flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <h2 className=" text-xl font-bold tracking-tighter sm:text-4xl md:text-xl">
-            Chat
-          </h2>
-        </div>
-      </header>
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 py-8">
-          <div className="flex flex-col-reverse justify-end gap-4 h-screen">
-            {messages.map((m, i) =>
-              m.role === "user" ? (
-                <UserChat
-                  key={i}
-                  message={m.content as string}
-                  time="12:37 PM"
-                />
-              ) : (
-                <AIChat key={i} message={m.content as string} time="12:38 PM" />
-              )
-            )}
+    <Card className="lg:ml-2 h-full">
+      <CardContent className="p-4 flex flex-col h-full">
+        <h2 className="text-2xl font-bold mb-4">Chat with assistant</h2>
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-3xl mx-auto px-4 py-8">
+            <div className="mb-4 flex justify-end flex-col-reverse">
+              {messages.map((m, i) =>
+                m.role === "user" ? (
+                  <UserChat
+                    key={i}
+                    message={m.content as string}
+                    time="12:37 PM"
+                  />
+                ) : (
+                  <AIChat
+                    key={i}
+                    message={m.content as string}
+                    time="12:38 PM"
+                  />
+                )
+              )}
+            </div>
           </div>
-        </div>
-      </main>
-      <footer>
-        <form
-          className="flex items-start px-4 py-2 border-t"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const newMessages: CoreMessage[] = [
-              ...messages,
-              { content: input, role: "user" },
-            ];
+        </main>
+        <footer>
+          <form
+            className="flex items-start px-4 py-2 border-t"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const newMessages: CoreMessage[] = [
+                ...messages,
+                { content: input, role: "user" },
+              ];
 
-            setMessages(newMessages);
-            setInput("");
+              setMessages(newMessages);
+              setInput("");
 
-            const result = await continueConversation(newMessages);
+              const result = await continueConversation(newMessages);
 
-            for await (const content of readStreamableValue(result)) {
-              setMessages([
-                ...newMessages,
-                {
-                  role: "assistant",
-                  content: content as string,
-                },
-              ]);
-            }
-          }}
-        >
-          <div className="flex-1 flex items-center gap-2 rounded-lg bg-input">
-            <Textarea
-              placeholder="Type your message..."
-              className="flex-1 bg-transparent focus:outline-none max-h-40"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-            />
-          </div>
-          <Button
-            type="submit"
-            variant="ghost"
-            size="icon"
-            className="rounded-full ml-2"
+              for await (const content of readStreamableValue(result)) {
+                setMessages([
+                  ...newMessages,
+                  {
+                    role: "assistant",
+                    content: content as string,
+                  },
+                ]);
+              }
+            }}
           >
-            <SendIcon className="w-6 h-6 text-primary" />
-            <span className="sr-only">Send Message</span>
-          </Button>
-        </form>
-      </footer>
-    </div>
+            <div className="flex-1 flex items-center gap-2 rounded-lg bg-input">
+              <Input
+                type="text"
+                placeholder="Type your message..."
+                className="flex-1 bg-transparent focus:outline-none max-h-40"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+              />
+            </div>
+            <Button
+              type="submit"
+              variant="ghost"
+              size="icon"
+              className="rounded-full ml-2"
+            >
+              <SendIcon className="w-6 h-6 text-primary" />
+              <span className="sr-only">Send Message</span>
+            </Button>
+          </form>
+        </footer>
+      </CardContent>
+    </Card>
   );
 }
 

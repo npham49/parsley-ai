@@ -31,7 +31,7 @@ import { Loader, X } from "lucide-react";
 import Link from "next/link";
 import { matchYoutubeUrl } from "@/utils/helperFunctions";
 import React from "react";
-import { UploadButton, UploadDropzone } from "@/utils/uploadthing";
+import { UploadButton } from "@/utils/uploadthing";
 
 export default function AddContentDialog({
   courseId,
@@ -52,11 +52,12 @@ export default function AddContentDialog({
     onSuccess: () => {
       toast({
         title: "File deleted",
-        variant: "default",
+        variant: "success",
       });
       setTempUrl("");
       setFileName("");
       form.setValue("fileKey", "");
+      form.setValue("pdfName", "");
     },
   });
 
@@ -81,9 +82,10 @@ export default function AddContentDialog({
       }
       toast({
         title: "You submitted a new course content",
-        variant: "default",
+        variant: "success",
       });
       console.log(e?.data);
+      form.reset();
       setOpen(false);
     },
   });
@@ -95,12 +97,23 @@ export default function AddContentDialog({
       type: undefined,
       youtubeUrl: "",
       fileKey: "",
+      pdfName: "",
     },
   });
 
   function onSubmit(data: z.infer<typeof DocumentSchema>) {
     mutation.mutate(data);
   }
+
+  React.useEffect(() => {
+    if (!open) {
+      if (form.getValues("fileKey") !== "") {
+        deleteUploadedFileMutation.mutate(form.getValues("fileKey") as string);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   return (
     <div>
       <Dialog open={open} onOpenChange={setOpen}>
@@ -202,12 +215,13 @@ export default function AddContentDialog({
                   )}
                   {form.watch("type") === "file" &&
                     form.watch("fileKey") === "" && (
-                      <UploadDropzone
+                      <UploadButton
                         endpoint="pdfUploader"
                         onClientUploadComplete={(res) => {
                           // Do something with the response
                           console.log("Files: ", res);
                           form.setValue("fileKey", res[0].key);
+                          form.setValue("pdfName", res[0].name);
                           setTempUrl(res[0].serverData.tempUrl.url);
                           setFileName(res[0].name);
                         }}

@@ -7,4 +7,5 @@ export const DocumentSchema = z.object({
   }),
   youtubeUrl: z.string().optional(),
   fileKey: z.string().optional(),
+  pdfName: z.string().optional(),
 });
