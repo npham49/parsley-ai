@@ -12,6 +12,8 @@ import {
 import { z } from "zod";
 import {
   createDocument,
+  deleteDocument,
+  getDocumentByIdAndUserId,
   getDocumentsByCourseIdAndUserId,
 } from "@/db/services/document";
 import { InsertContent } from "@/db/schema";
@@ -88,6 +90,42 @@ export const deleteUploadedFileAction = userActionClient
     const deleted = await utapi.deleteFiles([parsedInput.fileKey]);
 
     return deleted.deletedCount;
+  });
+
+export const deleteDocumentAction = userActionClient
+  .schema(
+    z.object({
+      id: z.string(),
+    })
+  )
+  .action(async ({ ctx, parsedInput }) => {
+    if (!parsedInput.id) {
+      throw new Error("No id provided");
+    }
+
+    const documentToBeDeleted = await getDocumentByIdAndUserId(
+      parsedInput.id,
+      ctx.user.id
+    );
+
+    if (!documentToBeDeleted?.fileKey) {
+      throw new Error("File key does not exist");
+    }
+
+    if (!matchYoutubeUrl(documentToBeDeleted.fileKey)) {
+      const deletedCount = await deleteUploadedFileAction({
+        fileKey: documentToBeDeleted.fileKey,
+      });
+
+      if (deletedCount?.data === 0) {
+        throw new Error("Files were not deleted successfully");
+      }
+    }
+
+    const deletedDocument = await deleteDocument(parsedInput.id);
+
+    revalidatePath("/dashboard/courses/" + documentToBeDeleted.courseId);
+    return deletedDocument;
   });
 
 export const addNewDocumentAction = userActionClient
@@ -239,8 +277,6 @@ const loadDocument = async (
       };
     })
   );
-
-  console.log(pdfEmbeddings);
   const addedContents = await addContentsForDocument({
     documentId: createdDocument[0].id,
     contents: pdfEmbeddings,

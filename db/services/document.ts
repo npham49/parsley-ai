@@ -1,6 +1,7 @@
 import * as schema from "../schema";
 import { db } from "..";
 import { and, eq } from "drizzle-orm";
+import { DocumentSchema } from "../../lib/zod-schemas/document";
 
 export async function getDocumentsByUserId(userId: number) {
   const response = await db.query.documentTable.findMany({
@@ -40,5 +41,13 @@ export async function createDocument(document: schema.InsertDocument) {
     .insert(schema.documentTable)
     .values(document)
     .returning({ id: schema.documentTable.id });
+  return response;
+}
+
+export async function deleteDocument(documentId: number) {
+  const response = await db
+    .delete(schema.documentTable)
+    .where(eq(schema.documentTable.id, documentId))
+    .returning();
   return response;
 }
