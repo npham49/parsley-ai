@@ -95,7 +95,7 @@ export const deleteUploadedFileAction = userActionClient
 export const deleteDocumentAction = userActionClient
   .schema(
     z.object({
-      id: z.string(),
+      id: z.number(),
     })
   )
   .action(async ({ ctx, parsedInput }) => {
