@@ -9,22 +9,23 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import AIChat from "./ai-chat";
 import UserChat from "./user-chat";
-import { Textarea } from "@/components/ui/textarea";
 import { type CoreMessage } from "ai";
 import { useState } from "react";
 import { continueConversation } from "./actions";
 import { readStreamableValue } from "ai/rsc";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
+import { useSearchParams } from "next/navigation";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
 export default function ChatBox() {
+  const searchParams = useSearchParams();
+  const search = searchParams.get("docs");
   const [messages, setMessages] = useState<CoreMessage[]>([]);
   const [input, setInput] = useState("");
   return (
-    <Card className="lg:ml-2 h-full">
+    <Card className="h-full rounded-none border-0">
       <CardContent className="p-4 flex flex-col h-full">
         <h2 className="text-2xl font-bold mb-4">Chat with assistant</h2>
         <main className="flex-1 overflow-y-auto">
@@ -61,7 +62,10 @@ export default function ChatBox() {
               setMessages(newMessages);
               setInput("");
 
-              const result = await continueConversation(newMessages);
+              const result = await continueConversation(
+                newMessages,
+                search?.split(",").map((id) => parseInt(id))
+              );
 
               for await (const content of readStreamableValue(result)) {
                 setMessages([

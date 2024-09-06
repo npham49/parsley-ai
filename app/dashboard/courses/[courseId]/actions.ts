@@ -291,7 +291,10 @@ const loadDocument = async (
   return createdDocument;
 };
 
-export async function continueConversation(messages: CoreMessage[]) {
+export async function continueConversation(
+  messages: CoreMessage[],
+  documentIds?: number[]
+) {
   const newMessage = messages[messages.length - 1].content;
 
   const embeddings = new OpenAIEmbeddings({

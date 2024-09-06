@@ -7,7 +7,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
 import { UseMutationResult } from "@tanstack/react-query";
 import { PopoverClose } from "@radix-ui/react-popover";
 
