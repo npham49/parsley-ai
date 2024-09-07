@@ -58,7 +58,7 @@ export default function CourseContentPanel({
   return (
     <ScrollArea className="h-[calc(100vh-200px)] lg:h-[calc(100vh-300px)]">
       {document.map((doc) => (
-        <div key={doc.id} className="flex items-center justify-between mb-2">
+        <div key={doc.id} className="mb-2 flex items-center justify-between">
           <div className="flex items-center">
             <Checkbox
               id={`doc-${doc.id}`}
@@ -75,7 +75,7 @@ export default function CourseContentPanel({
             id={doc.id}
           >
             <Button variant="ghost" size="icon">
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 min-w-4" />
             </Button>
           </DeleteConfirmationPopover>
         </div>

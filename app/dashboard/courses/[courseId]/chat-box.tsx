@@ -1,9 +1,4 @@
 "use client";
-/**
- * v0 by Vercel.
- * @see https://v0.dev/t/LxOTyFgqZQh
- * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
- */
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -26,11 +21,11 @@ export default function ChatBox() {
   const [input, setInput] = useState("");
   return (
     <Card className="h-full rounded-none border-0">
-      <CardContent className="p-4 flex flex-col h-full">
-        <h2 className="text-2xl font-bold mb-4">Chat with assistant</h2>
+      <CardContent className="flex h-full flex-col p-4">
+        <h2 className="mb-4 text-2xl font-bold">Chat with assistant</h2>
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-3xl mx-auto px-4 py-8">
-            <div className="mb-4 flex justify-end flex-col-reverse">
+          <div className="mx-auto max-w-3xl px-4 py-8">
+            <div className="mb-4 flex flex-col-reverse justify-end">
               {messages.map((m, i) =>
                 m.role === "user" ? (
                   <UserChat
@@ -44,14 +39,14 @@ export default function ChatBox() {
                     message={m.content as string}
                     time="12:38 PM"
                   />
-                )
+                ),
               )}
             </div>
           </div>
         </main>
         <footer>
           <form
-            className="flex items-start px-4 py-2 border-t"
+            className="flex items-start border-t px-4 py-2"
             onSubmit={async (e) => {
               e.preventDefault();
               const newMessages: CoreMessage[] = [
@@ -64,9 +59,10 @@ export default function ChatBox() {
 
               const result = await continueConversation(
                 newMessages,
-                search?.split(",").map((id) => parseInt(id))
+                search
+                  ? search.split(",").map((id) => parseInt(id))
+                  : undefined,
               );
-
               for await (const content of readStreamableValue(result)) {
                 setMessages([
                   ...newMessages,
@@ -78,11 +74,11 @@ export default function ChatBox() {
               }
             }}
           >
-            <div className="flex-1 flex items-center gap-2 rounded-lg bg-input">
+            <div className="flex flex-1 items-center gap-2 rounded-lg bg-input">
               <Input
                 type="text"
                 placeholder="Type your message..."
-                className="flex-1 bg-transparent focus:outline-none max-h-40"
+                className="max-h-40 flex-1 bg-transparent focus:outline-none"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
               />
@@ -91,9 +87,9 @@ export default function ChatBox() {
               type="submit"
               variant="ghost"
               size="icon"
-              className="rounded-full ml-2"
+              className="ml-2 rounded-full"
             >
-              <SendIcon className="w-6 h-6 text-primary" />
+              <SendIcon className="h-6 w-6 text-primary" />
               <span className="sr-only">Send Message</span>
             </Button>
           </form>

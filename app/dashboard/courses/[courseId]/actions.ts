@@ -28,12 +28,14 @@ import { WebPDFLoader } from "@langchain/community/document_loaders/web/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { utapi } from "@/lib/uploadthing";
 import { revalidatePath } from "next/cache";
+import { currentUser } from "@clerk/nextjs/server";
+import { getUserByClerkId } from "@/db/services/user";
 
 export const getCourseDocumentsAction = userActionClient
   .schema(
     z.object({
       courseId: z.number(),
-    })
+    }),
   )
   .action(async ({ ctx, parsedInput }) => {
     if (!parsedInput.courseId) {
@@ -42,7 +44,7 @@ export const getCourseDocumentsAction = userActionClient
 
     const documents = await getDocumentsByCourseIdAndUserId(
       parsedInput.courseId,
-      ctx.user.id
+      ctx.user.id,
     );
 
     if (!documents) {
@@ -55,12 +57,12 @@ export const getCourseAction = userActionClient
   .schema(
     z.object({
       courseId: z.string(),
-    })
+    }),
   )
   .action(async ({ ctx, parsedInput }) => {
     const course = await getCourseByIdAndUserId(
       parsedInput.courseId,
-      ctx.user.id
+      ctx.user.id,
     );
 
     if (!course) {
@@ -73,7 +75,7 @@ export const deleteUploadedFileAction = userActionClient
   .schema(
     z.object({
       fileKey: z.string(),
-    })
+    }),
   )
   .action(async ({ ctx, parsedInput }) => {
     const file = await utapi.listFiles();
@@ -96,7 +98,7 @@ export const deleteDocumentAction = userActionClient
   .schema(
     z.object({
       id: z.number(),
-    })
+    }),
   )
   .action(async ({ ctx, parsedInput }) => {
     if (!parsedInput.id) {
@@ -105,7 +107,7 @@ export const deleteDocumentAction = userActionClient
 
     const documentToBeDeleted = await getDocumentByIdAndUserId(
       parsedInput.id,
-      ctx.user.id
+      ctx.user.id,
     );
 
     if (!documentToBeDeleted?.fileKey) {
@@ -149,14 +151,14 @@ const loadYoutube = async (
       updatedAt: Date;
     };
   },
-  parsedInput: { youtubeUrl: string; courseId: number }
+  parsedInput: { youtubeUrl: string; courseId: number },
 ) => {
   if (!matchYoutubeUrl(parsedInput.youtubeUrl)) {
     throw new Error("Invalid Youtube URL");
   }
 
   const transcript = await YoutubeTranscript.fetchTranscript(
-    parsedInput.youtubeUrl?.split("watch?v=")[1].split("&")[0]
+    parsedInput.youtubeUrl?.split("watch?v=")[1].split("&")[0],
   );
 
   if (!transcript) {
@@ -164,7 +166,7 @@ const loadYoutube = async (
   }
 
   const videoInformation = await fetch(
-    `https://www.youtube.com/oembed?url=${parsedInput.youtubeUrl}&format=json`
+    `https://www.youtube.com/oembed?url=${parsedInput.youtubeUrl}&format=json`,
   ).then((res) => res.json());
 
   if (!videoInformation) {
@@ -200,7 +202,7 @@ const loadYoutube = async (
         documentId: createdDocument[0].id,
         userId: Number(ctx.user.id),
       };
-    })
+    }),
   );
 
   const addedContents = await addContentsForDocument({
@@ -228,7 +230,7 @@ const loadDocument = async (
       updatedAt: Date;
     };
   },
-  parsedInput: { fileKey: string; courseId: number; pdfName: string }
+  parsedInput: { fileKey: string; courseId: number; pdfName: string },
 ) => {
   if (!parsedInput.fileKey || !parsedInput.pdfName) {
     throw new Error("Missing values.");
@@ -275,7 +277,7 @@ const loadDocument = async (
         documentId: createdDocument[0].id,
         userId: Number(ctx.user.id),
       };
-    })
+    }),
   );
   const addedContents = await addContentsForDocument({
     documentId: createdDocument[0].id,
@@ -291,10 +293,22 @@ const loadDocument = async (
   return createdDocument;
 };
 
-export async function continueConversation(
+export const continueConversation = async (
   messages: CoreMessage[],
-  documentIds?: number[]
-) {
+  documentIds?: number[],
+) => {
+  const user = await currentUser();
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const dbUser = await getUserByClerkId(user.id);
+
+  if (!dbUser) {
+    throw new Error("User not found");
+  }
+
   const newMessage = messages[messages.length - 1].content;
 
   const embeddings = new OpenAIEmbeddings({
@@ -303,7 +317,13 @@ export async function continueConversation(
 
   const textEmbeddings = await embeddings.embedQuery(newMessage as string);
 
-  const similarContents = await findSimilarContent(textEmbeddings);
+  const similarContents = await findSimilarContent(
+    textEmbeddings,
+    dbUser.id,
+    documentIds,
+  );
+
+  console.log("similarContents", similarContents, documentIds);
 
   const newMessageWithContext = `
   PLEASE ANSWER THE FOLLOWING QUESTION FROM THE USER:
@@ -330,10 +350,11 @@ export async function continueConversation(
       },
     ],
     onFinish: () => {
+      // TODO: Add the new message to the database
       console.log("Finished streaming", messages);
     },
   });
 
   const stream = createStreamableValue(result.textStream);
   return stream.value;
-}
+};

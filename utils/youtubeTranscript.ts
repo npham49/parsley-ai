@@ -22,7 +22,7 @@ type TranscriptSegment = {
 export class YoutubeTranscriptTooManyRequestError extends YoutubeTranscriptError {
   constructor() {
     super(
-      "YouTube is receiving too many requests from this IP and now requires solving a captcha to continue"
+      "YouTube is receiving too many requests from this IP and now requires solving a captcha to continue",
     );
   }
 }
@@ -49,8 +49,8 @@ export class YoutubeTranscriptNotAvailableLanguageError extends YoutubeTranscrip
   constructor(lang: string, availableLangs: string[], videoId: string) {
     super(
       `No transcripts are available in ${lang} this video (${videoId}). Available languages: ${availableLangs.join(
-        ", "
-      )}`
+        ", ",
+      )}`,
     );
   }
 }
@@ -76,7 +76,7 @@ export class YoutubeTranscript {
    */
   public static async fetchTranscript(
     videoId: string,
-    config?: TranscriptConfig
+    config?: TranscriptConfig,
   ): Promise<TranscriptResponse[]> {
     const identifier = this.retrieveVideoId(videoId);
     const videoPageResponse = await fetch(
@@ -86,7 +86,7 @@ export class YoutubeTranscript {
           ...(config?.lang && { "Accept-Language": config.lang }),
           "User-Agent": USER_AGENT,
         },
-      }
+      },
     );
     const videoPageBody = await videoPageResponse.text();
 
@@ -105,7 +105,7 @@ export class YoutubeTranscript {
     const captions = (() => {
       try {
         return JSON.parse(
-          splittedHTML[1].split(',"videoDetails')[0].replace("\n", "")
+          splittedHTML[1].split(',"videoDetails')[0].replace("\n", ""),
         );
       } catch (e) {
         return undefined;
@@ -124,15 +124,15 @@ export class YoutubeTranscript {
       config?.lang &&
       !captions.captionTracks.some(
         (track: { languageCode: string | undefined }) =>
-          track.languageCode === config?.lang
+          track.languageCode === config?.lang,
       )
     ) {
       throw new YoutubeTranscriptNotAvailableLanguageError(
         config?.lang,
         captions.captionTracks.map(
-          (track: { languageCode: any }) => track.languageCode
+          (track: { languageCode: any }) => track.languageCode,
         ),
-        videoId
+        videoId,
       );
     }
 
@@ -140,7 +140,7 @@ export class YoutubeTranscript {
       config?.lang
         ? captions.captionTracks.find(
             (track: { languageCode: string | undefined }) =>
-              track.languageCode === config?.lang
+              track.languageCode === config?.lang,
           )
         : captions.captionTracks[0]
     ).baseUrl;
@@ -157,21 +157,23 @@ export class YoutubeTranscript {
 
     function transformArray(arr: TranscriptSegment[]) {
       const newArray = [];
+      const chunkSize = 5;
 
-      for (let i = 0; i < arr.length; i += 5) {
-        const chunk = arr.slice(i, i + 5);
-
-        if (chunk.length === 0) break;
+      for (let i = 0; i < arr.length; i += chunkSize) {
+        const chunk =
+          i === 0
+            ? arr.slice(i, i + chunkSize)
+            : [arr[i - 1], ...arr.slice(i, i + chunkSize)];
 
         const newText = chunk.map((item) => item.text).join(" ");
         const newDuration = chunk.reduce((acc, item) => acc + item.duration, 0);
-        const newOffset = chunk[0].offset;
+        const newOffset = i === 0 ? chunk[0].offset : chunk[1].offset;
 
         newArray.push({
           text: newText,
           duration: newDuration,
           offset: newOffset,
-          lang: chunk[0].lang,
+          lang: i === 0 ? chunk[0].lang : chunk[1].lang,
         });
       }
 
@@ -186,7 +188,7 @@ export class YoutubeTranscript {
         duration: parseFloat(result[2]),
         offset: parseFloat(result[1]),
         lang: config?.lang ?? captions.captionTracks[0].languageCode,
-      }))
+      })),
     );
     return transcript;
   }
@@ -204,7 +206,7 @@ export class YoutubeTranscript {
       return matchId[1];
     }
     throw new YoutubeTranscriptError(
-      "Impossible to retrieve Youtube video ID."
+      "Impossible to retrieve Youtube video ID.",
     );
   }
 }
