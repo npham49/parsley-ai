@@ -12,7 +12,7 @@ import {
 import AddCourseModal from "./add-course-modal";
 import { SelectCourse } from "@/db/schema";
 import { useQuery } from "@tanstack/react-query";
-import { getCourses } from "@/app/dashboard/actions";
+import { getCourses } from "@/app/dashboard/courses/actions";
 
 export default function Dashboard({
   initialData,
@@ -35,19 +35,19 @@ export default function Dashboard({
   });
 
   return (
-    <div className="flex flex-col min-h-[100dvh]">
-      <div className="flex items-center justify-between mb-8">
+    <div className="flex min-h-[100dvh] flex-col">
+      <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-3xl">
             All Courses
           </h1>
-          <p className="text-muted-foreground md:text-md mt-2">
+          <p className="md:text-md mt-2 text-muted-foreground">
             Browse and manage the courses you&apos;re currently enrolled in.
           </p>
         </div>
         <AddCourseModal />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {isLoading && <p>Loading...</p>}
         {error && <p>{error.message}</p>}
         {data.map((course: SelectCourse) => (

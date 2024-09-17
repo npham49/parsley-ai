@@ -22,7 +22,7 @@ export default function ChatBox() {
   return (
     <Card className="h-full rounded-none border-0">
       <CardContent className="flex h-full flex-col p-4">
-        <h2 className="mb-4 text-2xl font-bold">Chat with assistant</h2>
+        <h2 className="mb-4 text-2xl font-bold">Chat with AI Tutor</h2>
         <main className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-3xl px-4 py-8">
             <div className="mb-4 flex flex-col-reverse justify-end">

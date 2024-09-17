@@ -323,7 +323,7 @@ export const continueConversation = async (
     documentIds,
   );
 
-  console.log("similarContents", similarContents, documentIds);
+  console.log("Found similar contents", similarContents.length, documentIds);
 
   const newMessageWithContext = `
   PLEASE ANSWER THE FOLLOWING QUESTION FROM THE USER:

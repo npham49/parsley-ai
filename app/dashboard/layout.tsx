@@ -1,4 +1,5 @@
 import BreadcrumbGenerator from "@/components/BreadcrumbsGenerator";
+import { ModeToggle } from "@/components/theme-switcher";
 import { cn } from "@/lib/utils";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
@@ -9,34 +10,37 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="w-full bg-muted/40">
+    <div className="w-full">
       <main
         className={cn(
-          "rounded-md flex flex-row md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 mx-auto border border-neutral-200 dark:border-neutral-700",
-          "h-screen" // for your use case, use `h-screen` instead of `h-[60vh]`
+          "mx-auto flex w-full flex-1 flex-row rounded-md border-t border-neutral-200 dark:border-neutral-700 md:flex-row",
+          "h-auto md:h-screen",
         )}
       >
-        <div className="p-2 md:pt-5 md:px-5 bg-white dark:bg-neutral-900 flex flex-col gap-2 w-full h-full">
-          <header className="w-full flex justify-between">
+        <div className="flex h-full w-full flex-col gap-2 p-2 md:px-5 md:pt-5">
+          <header className="flex w-full justify-between">
             <BreadcrumbGenerator />
-            <UserButton />
+            <div className="flex gap-4">
+              <ModeToggle />
+              <UserButton />
+            </div>
           </header>
           {children}
-          <footer className="flex flex-col gap-2 h-6 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t z-0">
+          <footer className="z-0 flex h-6 w-full shrink-0 flex-col items-center gap-2 border-t px-4 py-6 sm:flex-row md:px-6">
             <p className="text-xs text-muted-foreground">
               &copy; 2024 AI App. All rights reserved.
             </p>
-            <nav className="sm:ml-auto flex gap-4 sm:gap-6">
+            <nav className="flex gap-4 sm:ml-auto sm:gap-6">
               <Link
                 href="#"
-                className="text-xs hover:underline underline-offset-4"
+                className="text-xs underline-offset-4 hover:underline"
                 prefetch={false}
               >
                 Terms of Service
               </Link>
               <Link
                 href="#"
-                className="text-xs hover:underline underline-offset-4"
+                className="text-xs underline-offset-4 hover:underline"
                 prefetch={false}
               >
                 Privacy

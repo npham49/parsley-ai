@@ -11,15 +11,15 @@ export default function AIChat({
 }) {
   return (
     <div className="flex items-start gap-2">
-      <Avatar className="w-8 h-8">
+      <Avatar className="h-8 w-8">
         <AvatarImage src="/placeholder-user.jpg" alt="User" />
         <AvatarFallback>JD</AvatarFallback>
       </Avatar>
       <div
-        className="grid gap-1 bg-card p-2 rounded-lg prose"
+        className="prose grid gap-1 rounded-lg bg-card p-2 dark:prose-invert"
         dangerouslySetInnerHTML={{
           __html: marked.parse(
-            message.replace(/^[\u200B\u200C\u200D\u200E\u200F\uFEFF]/, "")
+            message.replace(/^[\u200B\u200C\u200D\u200E\u200F\uFEFF]/, ""),
           ),
         }}
       >

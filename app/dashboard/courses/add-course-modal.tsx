@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNewCourse } from "@/app/dashboard/actions";
+import { createNewCourse } from "@/app/dashboard/courses/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { courseSchema } from "@/lib/zod-schemas/courses";

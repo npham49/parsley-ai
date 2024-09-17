@@ -22,11 +22,11 @@ export default async function CourseInformation({
   });
 
   return (
-    <ResizablePanelGroup direction="horizontal" className="h-screen">
-      <ResizablePanel defaultSize={30} minSize={30}>
-        <Card className="h-full rounded-none border-0">
-          <CardContent className="p-4 h-full overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4">Knowledge base</h2>
+    <ResizablePanelGroup direction="horizontal" className="rounded-md">
+      <ResizablePanel defaultSize={30} minSize={20}>
+        <Card className="h-full min-h-screen rounded-none border-0 md:min-h-0">
+          <CardContent className="h-full overflow-y-auto p-4">
+            <h2 className="mb-4 text-2xl font-bold">Knowledge base</h2>
             <div className="mb-4">
               <AddContentDialog courseId={course.id}>
                 <label htmlFor="file-upload">

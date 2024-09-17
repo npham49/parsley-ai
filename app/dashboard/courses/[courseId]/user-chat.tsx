@@ -11,11 +11,11 @@ export default function UserChat({
   const { user } = useUser();
   return (
     <div className="flex items-start gap-2 self-end">
-      <div className="grid gap-1 bg-primary p-2 rounded-lg text-primary-foreground">
+      <div className="grid gap-1 rounded-lg bg-primary p-2 text-primary-foreground">
         <p>{message}</p>
-        <div className="text-xs">{time}</div>
+        {/* <div className="text-xs">{time}</div> */}
       </div>
-      <Avatar className="w-8 h-8">
+      <Avatar className="h-8 w-8">
         <AvatarImage src={user?.imageUrl} alt="User" />
         <AvatarFallback>
           {user?.fullName

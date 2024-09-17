@@ -9,7 +9,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useSearchParams } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DeleteConfirmationPopover } from "@/components/delete-confirmation-popover";
-import { Trash2 } from "lucide-react";
+import { Edit2Icon, Trash2 } from "lucide-react";
 
 export default function CourseContentPanel({
   document,
@@ -65,19 +65,24 @@ export default function CourseContentPanel({
               checked={searchParams.get("docs")?.includes(String(doc.id))}
               onCheckedChange={() => handleDocumentSelect(doc.id)}
             />
-            <label htmlFor={`doc-${doc.id}`} className="ml-2">
+            <label htmlFor={`doc-${doc.id}`} className="ml-2 text-sm">
               {doc.title}
             </label>
           </div>
-          <DeleteConfirmationPopover
-            title={doc.title}
-            mutation={deleteDocumentMutation}
-            id={doc.id}
-          >
-            <Button variant="ghost" size="icon">
-              <Trash2 className="h-4 min-w-4" />
-            </Button>
-          </DeleteConfirmationPopover>
+          <div className="flex items-center">
+            {/* <Button variant="ghost" size="icon" className="min-w-4">
+              <Edit2Icon className="h-4 w-4" />
+            </Button> */}
+            <DeleteConfirmationPopover
+              title={doc.title}
+              mutation={deleteDocumentMutation}
+              id={doc.id}
+            >
+              <Button variant="ghost" size="icon" className="min-w-4">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </DeleteConfirmationPopover>
+          </div>
         </div>
       ))}
     </ScrollArea>

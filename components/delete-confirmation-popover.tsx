@@ -29,8 +29,8 @@ export function DeleteConfirmationPopover<TVariables = number>({
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-auto p-4">
-        <h4 className="font-medium mb-2">Delete {title}?</h4>
-        <p className="text-sm text-muted-foreground mb-4">
+        <h4 className="mb-2 font-medium">Delete {title}?</h4>
+        <p className="mb-4 text-sm text-muted-foreground">
           This action cannot be undone.
         </p>
         <div className="flex justify-end space-x-2">

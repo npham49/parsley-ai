@@ -18,7 +18,7 @@ export default function BreadcrumbGenerator() {
   }
 
   return (
-    <Breadcrumb className="hidden md:flex text-white">
+    <Breadcrumb className="flex text-white">
       <BreadcrumbList>
         {pathname.split("/").map((path, index) => {
           if (path === "") return;
