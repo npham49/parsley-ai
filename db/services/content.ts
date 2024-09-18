@@ -1,6 +1,15 @@
 import * as schema from "../schema";
 import { db } from "..";
-import { and, cosineDistance, desc, gt, inArray, sql, eq } from "drizzle-orm";
+import {
+  and,
+  cosineDistance,
+  desc,
+  gt,
+  inArray,
+  sql,
+  eq,
+  jaccardDistance,
+} from "drizzle-orm";
 
 export async function addContentsForDocument({
   documentId,
@@ -35,7 +44,7 @@ export async function findSimilarContent(
     .from(schema.contentTable)
     .where(
       and(
-        gt(similarity, 0.5),
+        gt(similarity, 0.3),
         ids ? inArray(schema.contentTable.documentId, ids) : undefined,
         eq(schema.contentTable.userId, userId),
       ),

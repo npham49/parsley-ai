@@ -243,12 +243,16 @@ const loadDocument = async (
 
   const docs = await loader.load();
 
+  console.log("Loaded PDF", docs);
+
   const textSplitter = new RecursiveCharacterTextSplitter({
     chunkSize: 1000,
     chunkOverlap: 200,
   });
 
   const splits = await textSplitter.splitDocuments(docs);
+
+  console.log("Split PDF", splits);
 
   const createdDocument = await createDocument({
     courseId: Number(parsedInput.courseId),
@@ -273,7 +277,7 @@ const loadDocument = async (
         metadata: {
           pageNumber: split.metadata.loc.pageNumber,
         },
-        content: split.pageContent,
+        content: split.pageContent.replaceAll("\n", " "),
         documentId: createdDocument[0].id,
         userId: Number(ctx.user.id),
       };

@@ -9,7 +9,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useSearchParams } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DeleteConfirmationPopover } from "@/components/delete-confirmation-popover";
-import { Edit2Icon, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 export default function CourseContentPanel({
   document,
@@ -30,7 +30,6 @@ export default function CourseContentPanel({
         });
         return;
       }
-
       toast({
         title: "Success",
         description: "Document deleted successfully",
@@ -62,7 +61,10 @@ export default function CourseContentPanel({
           <div className="flex items-center">
             <Checkbox
               id={`doc-${doc.id}`}
-              checked={searchParams.get("docs")?.includes(String(doc.id))}
+              checked={searchParams
+                .get("docs")
+                ?.split(",")
+                ?.includes(String(doc.id))}
               onCheckedChange={() => handleDocumentSelect(doc.id)}
             />
             <label htmlFor={`doc-${doc.id}`} className="ml-2 text-sm">
