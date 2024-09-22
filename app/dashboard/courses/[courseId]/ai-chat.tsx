@@ -2,13 +2,7 @@
 import { marked } from "marked";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
-export default function AIChat({
-  message,
-  time,
-}: {
-  message: string;
-  time: string;
-}) {
+export default function AIChat({ message }: { message: string }) {
   return (
     <div className="flex items-start gap-2">
       <Avatar className="h-8 w-8">
@@ -16,7 +10,7 @@ export default function AIChat({
         <AvatarFallback>JD</AvatarFallback>
       </Avatar>
       <div
-        className="prose grid gap-1 rounded-lg bg-card p-2 dark:prose-invert"
+        className="prose grid !max-w-none gap-1 rounded-lg bg-card p-2 dark:prose-invert"
         dangerouslySetInnerHTML={{
           __html: marked.parse(
             message.replace(/^[\u200B\u200C\u200D\u200E\u200F\uFEFF]/, ""),

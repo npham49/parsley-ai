@@ -9,13 +9,15 @@ import { toast } from "@/components/ui/use-toast";
 import { useSearchParams } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DeleteConfirmationPopover } from "@/components/delete-confirmation-popover";
-import { Trash2 } from "lucide-react";
+import { Edit2Icon, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function CourseContentPanel({
   document,
 }: {
   document: SelectDocument[];
 }) {
+  const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const deleteDocumentMutation = useMutation({
     mutationFn: (documentId: number) =>
@@ -47,6 +49,12 @@ export default function CourseContentPanel({
       newDocs = [...currentDocs, docId];
     }
 
+    if (newDocs.length === 0) {
+      setError("At least one document should be selected");
+      return;
+    } else {
+      setError(null);
+    }
     const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.set("docs", newDocs.join(","));
 
@@ -54,8 +62,19 @@ export default function CourseContentPanel({
     window.history.pushState(null, "", `?${newSearchParams.toString()}`);
   };
 
+  useEffect(() => {
+    // if the params are empty then set it to all documents
+    if (searchParams.get("docs") === null) {
+      const allDocs = document.map((doc) => doc.id);
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set("docs", allDocs.join(","));
+      window.history.pushState(null, "", `?${newSearchParams.toString()}`);
+    }
+  }, []);
+
   return (
     <ScrollArea className="h-[calc(100vh-200px)] lg:h-[calc(100vh-300px)]">
+      {error && <div className="text-center text-sm text-red-500">{error}</div>}
       {document.map((doc) => (
         <div key={doc.id} className="mb-2 flex items-center justify-between">
           <div className="flex items-center">
@@ -72,9 +91,9 @@ export default function CourseContentPanel({
             </label>
           </div>
           <div className="flex items-center">
-            {/* <Button variant="ghost" size="icon" className="min-w-4">
+            <Button variant="ghost" size="icon" className="min-w-4">
               <Edit2Icon className="h-4 w-4" />
-            </Button> */}
+            </Button>
             <DeleteConfirmationPopover
               title={doc.title}
               mutation={deleteDocumentMutation}

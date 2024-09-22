@@ -11,6 +11,11 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default async function CourseInformation({
   course,
@@ -22,10 +27,13 @@ export default async function CourseInformation({
   });
 
   return (
-    <ResizablePanelGroup direction="horizontal" className="rounded-md">
-      <ResizablePanel defaultSize={30} minSize={20}>
-        <Card className="h-full min-h-screen rounded-none border-0 md:min-h-0">
-          <CardContent className="h-full overflow-y-auto p-4">
+    <Card className="h-[90vh] min-h-[80vh] rounded-md border-0 pb-8 md:min-h-[85vh]">
+      <CardContent className="h-full p-4">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline">Manage Knowledgebase</Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-100 h-auto">
             <h2 className="mb-4 text-2xl font-bold">Knowledge base</h2>
             <div className="mb-4">
               <AddContentDialog courseId={course.id}>
@@ -41,13 +49,10 @@ export default async function CourseInformation({
             ) : (
               <CourseContentPanel document={documents?.data || []} />
             )}
-          </CardContent>
-        </Card>
-      </ResizablePanel>
-      <ResizableHandle />
-      <ResizablePanel defaultSize={70} minSize={30}>
-        <ChatBox />
-      </ResizablePanel>
-    </ResizablePanelGroup>
+          </PopoverContent>
+        </Popover>
+        <ChatBox course={course} />
+      </CardContent>
+    </Card>
   );
 }
