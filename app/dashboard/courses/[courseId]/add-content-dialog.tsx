@@ -127,7 +127,7 @@ export default function AddContentDialog({
           </DialogHeader>
           <div className="grid gap-4 pb-4">
             {mutation.isPending || deleteUploadedFileMutation.isPending ? (
-              <Loader />
+              <Loader className="mx-auto" />
             ) : (
               <Form {...form}>
                 <form
@@ -194,7 +194,7 @@ export default function AddContentDialog({
                   )}
                   {form.watch("type") === "youtube" &&
                     matchYoutubeUrl(form.watch("youtubeUrl") || "") && (
-                      <div className="py-2 rounded-md">
+                      <div className="rounded-md py-2">
                         <Label>Preview</Label>
                         <iframe
                           width="100%"
@@ -244,7 +244,7 @@ export default function AddContentDialog({
                         className="cursor-pointer"
                         onClick={() => {
                           deleteUploadedFileMutation.mutate(
-                            form.getValues("fileKey") as string
+                            form.getValues("fileKey") as string,
                           );
                         }}
                       />

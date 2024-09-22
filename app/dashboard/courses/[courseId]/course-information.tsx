@@ -34,7 +34,11 @@ export default async function CourseInformation({
             <Button variant="outline">Manage Knowledgebase</Button>
           </PopoverTrigger>
           <PopoverContent className="w-100 h-auto">
-            <h2 className="mb-4 text-2xl font-bold">Knowledge base</h2>
+            <h2 className="text-2xl font-bold">Knowledge base</h2>
+            <p className="mb-4 align-sub text-sm">
+              This is where you can select which documents the AI Tutor can use
+              to answer questions.
+            </p>
             <div className="mb-4">
               <AddContentDialog courseId={course.id}>
                 <label htmlFor="file-upload">

@@ -1,16 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import AIChat from "./ai-chat";
 import UserChat from "./user-chat";
 import { type CoreMessage } from "ai";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { continueConversation } from "./actions";
 import { readStreamableValue } from "ai/rsc";
-import { Card, CardContent } from "@/components/ui/card";
 import { useSearchParams } from "next/navigation";
-import { useInView } from "react-intersection-observer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useScrollAnchor } from "@/lib/hooks/use-scroll-anchor";
 import { ButtonScrollToBottom } from "./scroll-to-bottom-button";
@@ -91,7 +88,7 @@ export default function ChatBox({ course }: { course: SelectCourse }) {
                 size="icon"
                 className="mr-4 rounded-full"
               >
-                <Upload className="h-5 w-5 text-primary" />
+                <Upload className="h-6 w-6 text-primary" />
               </Button>
             </label>
           </AddContentDialog>
@@ -99,7 +96,7 @@ export default function ChatBox({ course }: { course: SelectCourse }) {
             <Input
               type="text"
               placeholder="Type your message..."
-              className="max-h-40 flex-1 bg-transparent focus:outline-none"
+              className="max-h-60 flex-1 bg-transparent p-4 focus:outline-none"
               value={input}
               onChange={(e) => setInput(e.target.value)}
             />
@@ -110,7 +107,7 @@ export default function ChatBox({ course }: { course: SelectCourse }) {
             size="icon"
             className="ml-4 rounded-full"
           >
-            <SendIcon className="h-5 w-5 text-primary" />
+            <SendIcon className="h-6 w-6 text-primary" />
             <span className="sr-only">Send Message</span>
           </Button>
         </form>

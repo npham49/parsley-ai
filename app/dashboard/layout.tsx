@@ -2,6 +2,7 @@ import BreadcrumbGenerator from "@/components/BreadcrumbsGenerator";
 import { ModeToggle } from "@/components/theme-switcher";
 import { cn } from "@/lib/utils";
 import { UserButton } from "@clerk/nextjs";
+import NextTopLoader from "nextjs-toploader";
 import Link from "next/link";
 
 export default function RootLayout({
@@ -20,11 +21,16 @@ export default function RootLayout({
         <div className="flex h-full w-full flex-col gap-2 p-2 md:px-5 md:pt-5">
           <header className="flex w-full justify-between">
             <BreadcrumbGenerator />
-            <div className="flex gap-4">
+            <div className="flex items-center gap-4">
+              {/* span displaying user's tier */}
+              <span className="h-6 rounded-md border border-card bg-card px-2 pt-1 text-xs text-muted-foreground">
+                Free
+              </span>
               <ModeToggle />
               <UserButton />
             </div>
           </header>
+          <NextTopLoader />
           {children}
           <footer className="flex h-6 w-full flex-col items-center gap-2 border-t px-4 py-6 sm:flex-row md:px-6">
             <p className="text-xs text-muted-foreground">
